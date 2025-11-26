@@ -21,6 +21,9 @@ public class Video {
     private int categoryId;
     private Timestamp uploadDate;
 
+    public Video(){
+        
+    }
     public Video(int id, String title, String description, int durationSeconds, String thumbnailUrl, String mpdPath, int categoryId, Timestamp uploadDate) {
         this.id = id;
         this.title = title;
