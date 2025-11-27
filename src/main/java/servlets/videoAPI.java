@@ -25,15 +25,16 @@ public class videoAPI extends HttpServlet {
         System.out.println("📺 API request para video ID: " + videoId);
 
         // Crear video hardcodeado con TODOS los atributos de la clase Video
-        Video video = new Video();
-        video.setId(1);
-        video.setTitle("Mi Video de Prueba - MPEG-DASH");
-        video.setDescription("Este es un video de prueba convertido a MPEG-DASH con múltiples calidades adaptativas (360p y 720p). El video se reproduce automáticamente adaptándose a la velocidad de tu conexión.");
-        video.setDurationSeconds(600); // 10 minutos
-        video.setThumbnailUrl("video001/thumbnail.jpg");
-        video.setMpdPath("video001/manifest.mpd");
-        video.setCategoryId(1);
-        video.setUploadDate(Timestamp.valueOf(LocalDateTime.now()));
+        Video video = new Video(
+            1,
+            "Mi Video de Prueba - MPEG-DASH",
+            "Este es un video de prueba convertido a MPEG-DASH con múltiples calidades adaptativas (360p y 720p). El video se reproduce automáticamente adaptándose a la velocidad de tu conexión.",
+            600, // durationSeconds - 10 minutos
+            "video001/thumbnail.jpg",
+            "video001/manifest.mpd",
+            1, // categoryId
+            Timestamp.valueOf(LocalDateTime.now())
+        );
 
         // Convertir a JSON y enviar
         Gson gson = new Gson();
@@ -42,5 +43,4 @@ public class videoAPI extends HttpServlet {
         System.out.println("✅ Enviando JSON: " + jsonResponse);
         response.getWriter().write(jsonResponse);
     }
-
 }

@@ -3,6 +3,24 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_5_0.xsd"
          version="5.0">
+    <!-- Servlets de Video -->
+    <servlet>
+        <servlet-name>videoapi</servlet-name>
+        <servlet-class>servlets.videoAPI</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>videoapi</servlet-name>
+        <url-pattern>/api/video</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>videostream</servlet-name>
+        <servlet-class>servlets.videoStream</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>videostream</servlet-name>
+        <url-pattern>/video/stream/*</url-pattern>
+    </servlet-mapping>
     <session-config>
         <session-timeout>
             30

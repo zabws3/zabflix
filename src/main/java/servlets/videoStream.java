@@ -13,7 +13,8 @@ import jakarta.servlet.http.HttpServletResponse;
 @WebServlet(name = "videostream", urlPatterns = {"/video/stream/*"})
 public class videoStream extends HttpServlet {
 
-    private static final String MEDIA_PATH = "/var/netflix-dash/media/";
+    // ⚠️ CAMBIAR ESTA RUTA SI ES NECESARIO (en tu caso es /var/zabflix/media/)
+    private static final String MEDIA_PATH = "/var/zabflix/media/";
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -27,7 +28,7 @@ public class videoStream extends HttpServlet {
 
         // Construir ruta: /video/stream/video001/manifest.mpd
         String filePath = MEDIA_PATH + pathInfo.substring(1);
-        System.out.println("Sirviendo: " + filePath);
+        System.out.println("📍 Sirviendo: " + filePath);
         
         File requestedFile = new File(filePath);
 
@@ -37,6 +38,7 @@ public class videoStream extends HttpServlet {
             String canonicalMediaPath = new File(MEDIA_PATH).getCanonicalPath();
             
             if (!canonicalPath.startsWith(canonicalMediaPath)) {
+                System.out.println("❌ Intento de acceso fuera del directorio permitido");
                 response.sendError(HttpServletResponse.SC_FORBIDDEN);
                 return;
             }
@@ -59,6 +61,11 @@ public class videoStream extends HttpServlet {
         response.setHeader("Accept-Ranges", "bytes");
         response.setHeader("Cache-Control", "public, max-age=3600");
         response.setHeader("Access-Control-Allow-Origin", "*");
+        
+        // Headers importantes para DASH
+        if (mimeType.equals("application/dash+xml")) {
+            response.setHeader("Content-Disposition", "inline; filename=\"manifest.mpd\"");
+        }
 
         // Servir archivo
         try (FileInputStream fis = new FileInputStream(requestedFile);
@@ -70,7 +77,10 @@ public class videoStream extends HttpServlet {
                 out.write(buffer, 0, bytesRead);
             }
             out.flush();
-            System.out.println("Archivo servido: " + requestedFile.getName());
+            System.out.println("✅ Archivo servido: " + requestedFile.getName() + " (" + requestedFile.length() + " bytes)");
+        } catch (IOException e) {
+            System.out.println("❌ Error sirviendo archivo: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
