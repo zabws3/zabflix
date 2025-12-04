@@ -228,7 +228,7 @@ return;
 
                 <div class="form-group">
                     <label for="mpdPath">Ruta MPD (DASH) <span class="required">*</span></label>
-                    <input type="text" id="mpdPath" name="mpdPath" required placeholder="/videos/ejemplo/manifest.mpd">
+                    <input type="text" id="mpdPath" name="mpdPath" required placeholder="video/manifest.mpd">
                     <div class="help-text">Ruta del archivo manifesto DASH (obligatorio)</div>
                 </div>
 

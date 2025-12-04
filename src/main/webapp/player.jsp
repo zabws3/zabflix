@@ -205,56 +205,237 @@
             <!-- CONTROLES -->
             <div class="controls">
                 <button onclick="goBack()">← Volver al Catálogo</button>
-            </div>
-
-            <!-- ESTADÍSTICAS DEL REPRODUCTOR -->
-            <div class="stats">
-                <div class="stat">
-                    <div class="stat-label">Calidad Actual</div>
-                    <div class="stat-value" id="currentQuality">-</div>
-                </div>
-                <div class="stat">
-                    <div class="stat-label">Bitrate</div>
-                    <div class="stat-value" id="currentBitrate">-</div>
-                </div>
-                <div class="stat">
-                    <div class="stat-label">Buffer</div>
-                    <div class="stat-value" id="bufferLevel">-</div>
-                </div>
-                <div class="stat">
-                    <div class="stat-label">Estado</div>
-                    <div class="stat-value" id="playerStatus">Esperando...</div>
-                </div>
+                <!-- Selector de calidad -->
+                <label style="color:#fff; margin-left:10px;">
+                    Calidad:
+                    <select id="qualitySelect" onchange="onQualityChange(this.value)">
+                        <option value="auto">Auto</option>
+                        <option value="0">360p</option>
+                        <option value="1">720p</option>
+                    </select>
+                </label>
             </div>
         </div>
 
-        <script>
-            // Variables globales
-            const videoId = '<%= videoId %>';
-            let player;
-            let videoData = null;
+        <!-- ESTADÍSTICAS DEL REPRODUCTOR -->
+        <div class="stats">
+            <div class="stat">
+                <div class="stat-label">Calidad Actual</div>
+                <div class="stat-value" id="currentQuality">-</div>
+            </div>
+            <div class="stat">
+                <div class="stat-label">Bitrate</div>
+                <div class="stat-value" id="currentBitrate">-</div>
+            </div>
+            <div class="stat">
+                <div class="stat-label">Buffer</div>
+                <div class="stat-value" id="bufferLevel">-</div>
+            </div>
+            <div class="stat">
+                <div class="stat-label">Estado</div>
+                <div class="stat-value" id="playerStatus">Esperando...</div>
+            </div>
+        </div>
+    </div>
 
-            // ========== INICIALIZACIÓN ==========
-            document.addEventListener('DOMContentLoaded', function () {
-                console.log('Cargando video ID:', videoId);
+    <script>
+        // Variables globales
+        const videoId = '<%= videoId %>';
+        let player;
+        let videoData = null;
+        let videoQualities = [];
+        // ========== INICIALIZACIÓN ==========
+        document.addEventListener('DOMContentLoaded', function () {
+            console.log('Cargando video ID:', videoId);
 
-                // 1. Inicializar reproductor DASH
-                initializePlayer();
+            // 1. Inicializar reproductor DASH
+            initializePlayer();
 
-                // 2. Cargar datos del video desde la API
-                loadVideoData();
+            // 2. Cargar datos del video desde la API
+            loadVideoData();
+        });
+
+        // ========== INICIALIZAR DASH.JS ==========
+
+        function initializePlayer() {
+            const video = document.getElementById('videoPlayer');
+
+            // Crear reproductor dash.js
+            player = dashjs.MediaPlayer().create();
+            player.initialize(video, null, false);
+
+            // Configuración mínima (sin parámetros no soportados)
+            player.updateSettings({
+                streaming: {
+                    abr: {
+                        autoSwitchBitrate: {
+                            video: false
+                        }
+                    }
+                }
             });
 
-            // ========== INICIALIZAR DASH.JS ==========
+            // Escuchadores de eventos
+            player.on(dashjs.MediaPlayer.events.STREAM_INITIALIZED, onStreamReady);
+            player.on(dashjs.MediaPlayer.events.METRIC_CHANGED, onMetricsUpdated);
+            player.on(dashjs.MediaPlayer.events.ERROR, onPlayerError);
 
-            function initializePlayer() {
-                const video = document.getElementById('videoPlayer');
+            console.log('Reproductor DASH.js inicializado');
+        }
 
-                // Crear reproductor dash.js
-                player = dashjs.MediaPlayer().create();
-                player.initialize(video, null, false);
 
-                // Configuración mínima (sin parámetros no soportados)
+        // ========== CARGAR DATOS DEL VIDEO ==========
+        function loadVideoData() {
+            // Llamar a la API para obtener información del video
+            fetch('api/video?id=' + videoId)
+                    .then(response => {
+                        if (!response.ok)
+                            throw new Error('Error en la API');
+                        return response.json();
+                    })
+                    .then(data => {
+                        console.log('Datos del video recibidos:', data);
+                        videoData = data;
+
+                        // Mostrar información
+                        displayVideoInfo(data);
+
+                        // Cargar el stream MPEG-DASH
+                        loadVideoStream(data);
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        showError('Error cargando el video: ' + error.message);
+                        document.getElementById('loading').style.display = 'block';
+                    });
+        }
+
+        // ========== MOSTRAR INFORMACIÓN DEL VIDEO ==========
+        function displayVideoInfo(data) {
+            console.log('Mostrando información del video');
+
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('videoInfo').style.display = 'block';
+
+            // Rellenar datos
+            document.getElementById('videoTitle').textContent = data.title || 'Sin título';
+            document.getElementById('videoDescription').textContent = data.description || 'Sin descripción';
+            document.getElementById('videoCategory').textContent = 'Categoría ' + (data.categoryId || '-');
+            document.getElementById('videoDuration').textContent = formatSeconds(data.durationSeconds || 0);
+
+            // Fecha
+            if (data.uploadDate) {
+                const fecha = new Date(data.uploadDate);
+                document.getElementById('videoDate').textContent = fecha.toLocaleDateString('es-ES');
+            }
+        }
+
+        // ========== CARGAR STREAM MPEG-DASH ==========
+        function loadVideoStream(data) {
+            const mpdUrl = 'video/stream/' + data.mpdPath;
+
+            console.log('Cargando MPD desde:', mpdUrl);
+            console.log('URL completa:', window.location.origin + '/' + mpdUrl);
+
+            try {
+                player.attachSource(mpdUrl);
+                document.getElementById('playerStatus').textContent = 'Cargado (pulsa ▶)';
+            } catch (error) {
+                console.error('Error cargando stream:', error);
+                showError('Error al cargar el stream: ' + error.message);
+            }
+        }
+
+
+        // ========== EVENT: Stream listo ==========
+        function onStreamReady(e) {
+            console.log('✅ Stream listo para reproducir');
+            document.getElementById('playerStatus').textContent = 'Listo';
+            document.getElementById('videoPlayer').style.display = 'block';
+
+            try {
+                // Lista de calidades disponibles para vídeo
+                videoQualities = player.getBitrateInfoListFor('video') || [];
+                console.log('Calidades disponibles:', videoQualities);
+
+                // Opcional: ajustar los textos del `<select>` según height real
+                const select = document.getElementById('qualitySelect');
+                if (videoQualities.length >= 2) {
+                    select.options[1].text = videoQualities[0].height + 'p'; // índice 0
+                    select.options[2].text = videoQualities[1].height + 'p'; // índice 1
+                }
+            } catch (err) {
+                console.warn('No se pudo obtener la lista de calidades:', err);
+            }
+        }
+
+
+        // ========== EVENT: Métricas actualizadas ==========
+        function onMetricsUpdated(e) {
+            if (e.mediaType === 'video') {
+                try {
+                    // Buffer
+                    const bufferLevel = player.getBufferLength('video');
+                    document.getElementById('bufferLevel').textContent = Math.round(bufferLevel) + 's';
+
+                    // Calidad y bitrate actuales
+                    const qualityIndex = player.getQualityFor('video');   // índice actual
+                    const bitrates = player.getBitrateInfoListFor('video');
+
+                    if (bitrates && bitrates[qualityIndex]) {
+                        const q = bitrates[qualityIndex];
+                        // Ej: 360p / 720p
+                        document.getElementById('currentQuality').textContent =
+                                (q.height ? q.height + 'p' : qualityIndex);
+
+                        // Bitrate en kbps
+                        document.getElementById('currentBitrate').textContent =
+                                Math.round(q.bitrate / 1000) + ' kbps';
+                    }
+                } catch (err) {
+                    console.warn('No se pudieron leer métricas de vídeo:', err);
+                }
+            }
+        }
+
+
+
+        // ========== EVENT: Error en reproductor ==========
+        function onPlayerError(e) {
+            console.error('Error del reproductor:', e);
+            showError('Error en la reproducción: ' + (e.error ? e.error.message : 'Desconocido'));
+        }
+
+        // ========== UTILIDADES ==========
+        function formatSeconds(seconds) {
+            const hours = Math.floor(seconds / 3600);
+            const minutes = Math.floor((seconds % 3600) / 60);
+            const secs = Math.floor(seconds % 60);
+
+            if (hours > 0) {
+                return hours + ':' + String(minutes).padStart(2, '0') + ':' + String(secs).padStart(2, '0');
+            } else {
+                return minutes + ':' + String(secs).padStart(2, '0');
+            }
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('error');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            console.error('⚠️', message);
+        }
+
+        function goBack() {
+            window.location.href = 'menu.jsp';
+        }
+
+        function onQualityChange(value) {
+            if (!player)
+                return;
+
+            if (value === 'auto') {
+                // Volver al modo automático
                 player.updateSettings({
                     streaming: {
                         abr: {
@@ -264,129 +445,40 @@
                         }
                     }
                 });
-
-                // Escuchadores de eventos
-                player.on(dashjs.MediaPlayer.events.STREAM_INITIALIZED, onStreamReady);
-                player.on(dashjs.MediaPlayer.events.METRIC_CHANGED, onMetricsUpdated);
-                player.on(dashjs.MediaPlayer.events.ERROR, onPlayerError);
-
-                console.log('Reproductor DASH.js inicializado');
+                console.log('Calidad: automática');
+                return;
             }
 
+            const index = parseInt(value, 10);
 
-            // ========== CARGAR DATOS DEL VIDEO ==========
-            function loadVideoData() {
-                // Llamar a la API para obtener información del video
-                fetch('api/video?id=' + videoId)
-                        .then(response => {
-                            if (!response.ok)
-                                throw new Error('Error en la API');
-                            return response.json();
-                        })
-                        .then(data => {
-                            console.log('Datos del video recibidos:', data);
-                            videoData = data;
-
-                            // Mostrar información
-                            displayVideoInfo(data);
-
-                            // Cargar el stream MPEG-DASH
-                            loadVideoStream(data);
-                        })
-                        .catch(error => {
-                            console.error('Error:', error);
-                            showError('Error cargando el video: ' + error.message);
-                            document.getElementById('loading').style.display = 'block';
-                        });
-            }
-
-            // ========== MOSTRAR INFORMACIÓN DEL VIDEO ==========
-            function displayVideoInfo(data) {
-                console.log('Mostrando información del video');
-
-                document.getElementById('loading').style.display = 'none';
-                document.getElementById('videoInfo').style.display = 'block';
-
-                // Rellenar datos
-                document.getElementById('videoTitle').textContent = data.title || 'Sin título';
-                document.getElementById('videoDescription').textContent = data.description || 'Sin descripción';
-                document.getElementById('videoCategory').textContent = 'Categoría ' + (data.categoryId || '-');
-                document.getElementById('videoDuration').textContent = formatSeconds(data.durationSeconds || 0);
-
-                // Fecha
-                if (data.uploadDate) {
-                    const fecha = new Date(data.uploadDate);
-                    document.getElementById('videoDate').textContent = fecha.toLocaleDateString('es-ES');
-                }
-            }
-
-            // ========== CARGAR STREAM MPEG-DASH ==========
-            function loadVideoStream(data) {
-                const mpdUrl = 'video/stream/' + data.mpdPath;
-
-                console.log('Cargando MPD desde:', mpdUrl);
-                console.log('URL completa:', window.location.origin + '/' + mpdUrl);
-
-                try {
-                    player.attachSource(mpdUrl);
-                    document.getElementById('playerStatus').textContent = 'Cargado (pulsa ▶)';
-                } catch (error) {
-                    console.error('Error cargando stream:', error);
-                    showError('Error al cargar el stream: ' + error.message);
-                }
-            }
-
-
-            // ========== EVENT: Stream listo ==========
-            function onStreamReady(e) {
-                console.log('Stream listo para reproducir');
-                document.getElementById('playerStatus').textContent = 'Listo';
-                document.getElementById('videoPlayer').style.display = 'block';
-            }
-
-            // ========== EVENT: Métricas actualizadas ==========
-            function onMetricsUpdated(e) {
-                if (e.mediaType === 'video') {
-                    // Solo actualizamos el buffer, sin usar APIs antiguas
-                    try {
-                        const bufferLevel = player.getBufferLength('video');
-                        document.getElementById('bufferLevel').textContent = Math.round(bufferLevel) + 's';
-                    } catch (err) {
-                        console.warn('No se pudo leer el buffer:', err);
+            // Desactivar automático y fijar índice (0 = calidad más baja, 1 = más alta, etc.)
+            player.updateSettings({
+                streaming: {
+                    abr: {
+                        autoSwitchBitrate: {
+                            video: false
+                        }
                     }
                 }
-            }
+            });
 
-
-            // ========== EVENT: Error en reproductor ==========
-            function onPlayerError(e) {
-                console.error('Error del reproductor:', e);
-                showError('Error en la reproducción: ' + (e.error ? e.error.message : 'Desconocido'));
-            }
-
-            // ========== UTILIDADES ==========
-            function formatSeconds(seconds) {
-                const hours = Math.floor(seconds / 3600);
-                const minutes = Math.floor((seconds % 3600) / 60);
-                const secs = Math.floor(seconds % 60);
-
-                if (hours > 0) {
-                    return hours + ':' + String(minutes).padStart(2, '0') + ':' + String(secs).padStart(2, '0');
-                } else {
-                    return minutes + ':' + String(secs).padStart(2, '0');
+            try {
+                player.setQualityFor('video', index);
+                // Forzar actualización visual inmediata
+                const bitrates = player.getBitrateInfoListFor('video');
+                if (bitrates && bitrates[index]) {
+                    const q = bitrates[index];
+                    document.getElementById('currentQuality').textContent =
+                            (q.height ? q.height + 'p' : index);
+                    document.getElementById('currentBitrate').textContent =
+                            Math.round(q.bitrate / 1000) + ' kbps';
                 }
+                console.log('Cambiando a calidad índice', index);
+            } catch (err) {
+                console.error('Error cambiando calidad:', err);
             }
+        }
 
-            function showError(message) {
-                const errorDiv = document.getElementById('error');
-                errorDiv.textContent = message;
-                errorDiv.style.display = 'block';
-                console.error('⚠️', message);
-            }
-
-            function goBack() {
-                window.location.href = 'menu.jsp';
-            }
-        </script>
-    </body>
+    </script>
+</body>
 </html>

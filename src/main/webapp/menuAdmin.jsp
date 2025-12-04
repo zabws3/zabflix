@@ -294,12 +294,12 @@
         
     if (usuarioAdmin == null) {
         // Redirigir a página de login si no está autenticado
-        response.sendRedirect("login.jsp?error=Debes iniciar sesión como admin");
+        response.sendRedirect("login.jsp?error=No eres administrador");
         return;
     }
     
     if(!usuarioAdmin.equals("admin")){
-        response.sendRedirect("login.jsp?error=Debes iniciar sesión como admin");
+        response.sendRedirect("menu.jsp");
         return;
     }
         %>

@@ -1,4 +1,4 @@
-ffmpeg -y -i "/home/alumne/Escritorio/Sintel.mkv" \
+ffmpeg -y -i "/home/alumne/Escritorio/BigBuckBunny.mov" \
   -map 0:v:0 -map 0:v:0 -map 0:a:0? \
   -c:v libx264 -preset medium -pix_fmt yuv420p \
   -b:v:0 800k  -s:v:0 640x360  -profile:v:0 baseline \
@@ -9,4 +9,4 @@ ffmpeg -y -i "/home/alumne/Escritorio/Sintel.mkv" \
   -adaptation_sets "id=0,streams=v id=1,streams=a" \
   -init_seg_name "init-\$RepresentationID\$.m4s" \
   -media_seg_name "chunk-\$RepresentationID\$-\$Number\$.m4s" \
-  -f dash "/var/zabflix/media/Sintel/manifest.mpd"
+  -f dash "/var/zabflix/media/bigBuckBunny/manifest.mpd"

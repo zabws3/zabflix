@@ -37,9 +37,14 @@ public class login extends HttpServlet {
         if (usuario != null) {
             HttpSession session = request.getSession();
             session.setAttribute("usuario", usuario);
-            response.sendRedirect("menu.jsp");
+            if(usuario.equals("admin")){
+                response.sendRedirect("menuAdmin.jsp");
+            }else{
+                response.sendRedirect("menu.jsp");
+            }
+            
         } else {
-            response.sendRedirect("login.jsp?error=Credenciales inválidas");
+            response.sendRedirect("login.jsp?error=Email o contraseña incorrectos");
         }
     }
 }

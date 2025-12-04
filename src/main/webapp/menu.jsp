@@ -618,10 +618,10 @@
                     <span>▼</span>
                 </button>
                 <div class="dropdown-menu" id="dropdownMenu">
-                    <a href="profile.jsp">👤 Mi Perfil</a>
-                    <a href="mi-lista.jsp">❤️ Mi Lista</a>
-                    <a href="configuracion.jsp">⚙️ Configuración</a>
-                    <a href="ayuda.jsp">❓ Ayuda</a>
+                    <a href="menu.jsp">👤 Mi Perfil</a>
+                    <a href="menu.jsp">❤️ Mi Lista</a> 
+                    <a href="menu.jsp">⚙️ Configuración</a>
+                    <a href="menu.jsp">❓ Ayuda</a>
                     <button onclick="logout()">🚪 Cerrar Sesión</button>
                 </div>
             </div>
@@ -742,7 +742,7 @@
 
         function logout() {
             if (confirm('¿Estás seguro de que deseas cerrar sesión?')) {
-                window.location.href = 'LogoutServlet';
+                window.location.href = 'logout';
             }
         }
 
