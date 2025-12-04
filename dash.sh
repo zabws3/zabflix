@@ -1,0 +1,12 @@
+ffmpeg -y -i "/home/alumne/Escritorio/Sintel.mkv" \
+  -map 0:v:0 -map 0:v:0 -map 0:a:0? \
+  -c:v libx264 -preset medium -pix_fmt yuv420p \
+  -b:v:0 800k  -s:v:0 640x360  -profile:v:0 baseline \
+  -b:v:1 2500k -s:v:1 1280x720 -profile:v:1 main \
+  -c:a aac -b:a:0 128k -ar:a:0 48000 -ac:a:0 2 \
+  -use_timeline 1 -use_template 1 \
+  -seg_duration 4 \
+  -adaptation_sets "id=0,streams=v id=1,streams=a" \
+  -init_seg_name "init-\$RepresentationID\$.m4s" \
+  -media_seg_name "chunk-\$RepresentationID\$-\$Number\$.m4s" \
+  -f dash "/var/zabflix/media/Sintel/manifest.mpd"
