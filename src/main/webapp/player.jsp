@@ -4,7 +4,7 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Netflix DASH - Reproductor Simple</title>
+        <title>Zabflix - Reproductor</title>
         <!-- Librería dash.js para reproducción MPEG-DASH -->
         <script src="https://cdn.dashjs.org/latest/dash.all.min.js"></script>
         <style>
@@ -158,9 +158,9 @@
     </head>
     <body>
         <%
-        
+            //Controlar sesion FALTA POR IMPLEMENTAR!!
             // Obtener el ID del video
-            String videoId = request.getParameter("videoId");
+            String videoId = request.getParameter("VideoId");
             if (videoId == null || videoId.isEmpty()) {
                 videoId = "1"; // Por defecto, video 1
             }
@@ -168,7 +168,7 @@
 
         <!-- HEADER -->
         <header>
-            <h1>🎬 Netflix DASH - Reproductor</h1>
+            <h1>Zabflix</h1>
         </header>
 
         <div class="container">
@@ -236,7 +236,7 @@
 
             // ========== INICIALIZACIÓN ==========
             document.addEventListener('DOMContentLoaded', function () {
-                console.log('📺 Cargando video ID:', videoId);
+                console.log('Cargando video ID:', videoId);
 
                 // 1. Inicializar reproductor DASH
                 initializePlayer();
@@ -270,7 +270,7 @@
                 player.on(dashjs.MediaPlayer.events.METRIC_CHANGED, onMetricsUpdated);
                 player.on(dashjs.MediaPlayer.events.ERROR, onPlayerError);
 
-                console.log('✅ Reproductor DASH.js inicializado');
+                console.log('Reproductor DASH.js inicializado');
             }
 
 
@@ -284,7 +284,7 @@
                             return response.json();
                         })
                         .then(data => {
-                            console.log('📊 Datos del video recibidos:', data);
+                            console.log('Datos del video recibidos:', data);
                             videoData = data;
 
                             // Mostrar información
@@ -294,7 +294,7 @@
                             loadVideoStream(data);
                         })
                         .catch(error => {
-                            console.error('❌ Error:', error);
+                            console.error('Error:', error);
                             showError('Error cargando el video: ' + error.message);
                             document.getElementById('loading').style.display = 'block';
                         });
@@ -302,7 +302,7 @@
 
             // ========== MOSTRAR INFORMACIÓN DEL VIDEO ==========
             function displayVideoInfo(data) {
-                console.log('📝 Mostrando información del video');
+                console.log('Mostrando información del video');
 
                 document.getElementById('loading').style.display = 'none';
                 document.getElementById('videoInfo').style.display = 'block';
@@ -324,14 +324,14 @@
             function loadVideoStream(data) {
                 const mpdUrl = 'video/stream/' + data.mpdPath;
 
-                console.log('🎬 Cargando MPD desde:', mpdUrl);
-                console.log('📍 URL completa:', window.location.origin + '/' + mpdUrl);
+                console.log('Cargando MPD desde:', mpdUrl);
+                console.log('URL completa:', window.location.origin + '/' + mpdUrl);
 
                 try {
                     player.attachSource(mpdUrl);
                     document.getElementById('playerStatus').textContent = 'Cargado (pulsa ▶)';
                 } catch (error) {
-                    console.error('❌ Error cargando stream:', error);
+                    console.error('Error cargando stream:', error);
                     showError('Error al cargar el stream: ' + error.message);
                 }
             }
@@ -339,7 +339,7 @@
 
             // ========== EVENT: Stream listo ==========
             function onStreamReady(e) {
-                console.log('✅ Stream listo para reproducir');
+                console.log('Stream listo para reproducir');
                 document.getElementById('playerStatus').textContent = 'Listo';
                 document.getElementById('videoPlayer').style.display = 'block';
             }
@@ -360,7 +360,7 @@
 
             // ========== EVENT: Error en reproductor ==========
             function onPlayerError(e) {
-                console.error('❌ Error del reproductor:', e);
+                console.error('Error del reproductor:', e);
                 showError('Error en la reproducción: ' + (e.error ? e.error.message : 'Desconocido'));
             }
 

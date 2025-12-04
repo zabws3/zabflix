@@ -13,9 +13,8 @@ CREATE TABLE users (
     user_id INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY (START WITH 1, INCREMENT BY 1),
     username VARCHAR(50) NOT NULL UNIQUE,
     email VARCHAR(100) NOT NULL UNIQUE,
-    password_hash VARCHAR(255) NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    last_login TIMESTAMP
+    password_hash VARCHAR(255) NOT NULL
+
 );
 
 -- Índices para users (En Derby se crean fuera)
@@ -41,7 +40,6 @@ CREATE TABLE videos (
     mpd_path VARCHAR(500) NOT NULL,
     category_id INT,
     upload_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    views_count INT DEFAULT 0,
     CONSTRAINT fk_video_category FOREIGN KEY (category_id) REFERENCES categories(category_id) ON DELETE SET NULL
 );
 
@@ -65,3 +63,19 @@ CREATE TABLE view_history (
 CREATE INDEX idx_history_user ON view_history(user_id);
 CREATE INDEX idx_history_video ON view_history(video_id);
 CREATE INDEX idx_history_last_watched ON view_history(last_watched);
+
+
+
+
+
+INSERT INTO CATEGORIES (name, description) VALUES
+('Acción', 'Películas y series con alta dosis de adrenalina, peleas y persecuciones.'),
+('Comedia', 'Contenido centrado en el humor y situaciones divertidas.'),
+('Drama', 'Historias intensas con fuerte carga emocional y conflictos personales.'),
+('Ciencia ficción', 'Historias futuristas, tecnología avanzada y mundos alternativos.'),
+('Fantasía', 'Mundos imaginarios con magia, criaturas y leyendas.'),
+('Terror', 'Películas y series diseñadas para causar miedo y suspense.'),
+('Thriller', 'Tramas de misterio, tensión y giros inesperados.'),
+('Romance', 'Historias centradas en relaciones amorosas.'),
+('Documental', 'Contenido basado en hechos reales y material informativo.'),
+('Animación', 'Películas y series animadas para distintos públicos.');

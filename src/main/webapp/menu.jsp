@@ -1,5 +1,23 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ page import="java.util.List" %>
+<%@ page import="clases.Video" %>
+<%@ page import="daos.videoDAO" %>
+
+<%
+    // Verificar si el usuario está autenticado
+    String usuario = (String) session.getAttribute("usuario");
+    if (usuario == null) {
+        response.sendRedirect("login");
+        return;
+    }
+    
+    String iniciales = usuario.substring(0, 1).toUpperCase();
+    
+    // Obtener videos de la BD
+    videoDAO videoDAO = new videoDAO();
+    List<Video> todosVideos = videoDAO.obtenerTodosVideos();
+%>
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -473,6 +491,33 @@
             color: var(--gray-text);
         }
 
+        .empty-message {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--gray-text);
+            font-size: 1.2em;
+        }
+
+        .badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: var(--primary-color);
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .rating {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 12px;
+            color: #ffc107;
+        }
+
         /* RESPONSIVE */
         @media (max-width: 1200px) {
             .video-grid {
@@ -538,44 +583,24 @@
             }
         }
 
-        .badge {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background: var(--primary-color);
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 11px;
-            font-weight: bold;
-            text-transform: uppercase;
-        }
-
-        .rating {
+        .placeholder-thumbnail {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             display: flex;
             align-items: center;
-            gap: 5px;
-            font-size: 12px;
-            color: #ffc107;
+            justify-content: center;
+            font-size: 48px;
         }
     </style>
 </head>
 <body>
-    <%
-        String usuario = (String) session.getAttribute("email");
-        if (usuario == null) {
-            response.sendRedirect("login");
-            return;
-        }
-        String iniciales = usuario.substring(0, 1).toUpperCase();
-    %>
-
     <!-- HEADER -->
     <header>
         <div class="logo">ZABFLIX <span>DASH</span></div>
         
         <nav>
             <a href="#inicio">Inicio</a>
-            <a href="#series">Series</a>
             <a href="#peliculas">Películas</a>
             <a href="#mi-lista">Mi Lista</a>
         </nav>
@@ -583,7 +608,7 @@
         <div class="header-right">
             <div class="search-container">
                 <span class="search-icon">🔍</span>
-                <input type="text" class="search-input" placeholder="Buscar contenido...">
+                <input type="text" class="search-input" id="searchInput" placeholder="Buscar contenido...">
             </div>
 
             <div class="profile-menu">
@@ -606,10 +631,10 @@
     <!-- HERO SECTION -->
     <section class="hero" id="inicio">
         <div class="hero-content">
-            <h1>Oppenheimer</h1>
-            <p>La historia épica del físico J. Robert Oppenheimer y su papel central en el desarrollo de la bomba atómica durante la Segunda Guerra Mundial.</p>
+            <h1>Bienvenido a Zabflix</h1>
+            <p>Explora nuestra amplia colección de películas y series. Descubre contenido nuevo cada día.</p>
             <div class="hero-buttons">
-                <button class="btn-play">▶ Reproducir</button>
+                <button class="btn-play">▶ Explorar</button>
                 <button class="btn-info">ℹ Más Información</button>
             </div>
         </div>
@@ -617,387 +642,48 @@
 
     <!-- MAIN CONTENT -->
     <main>
-        <!-- CONTINUAR VIENDO -->
-        <section class="section">
-            <h2 class="section-title">Continuar Viendo</h2>
-            <div class="video-grid">
-                <div class="video-card">
-                    <div class="badge">En Progreso</div>
-                    <img src="https://via.placeholder.com/220x310?text=Stranger+Things" alt="Stranger Things">
-                    <div class="video-overlay">
-                        <h4>Stranger Things</h4>
-                        <p>Temporada 4 - Episodio 5</p>
-                        <div class="rating">
-                            <span>⭐</span>
-                            <span>8.7/10</span>
-                        </div>
-                        <div class="video-overlay-actions">
-                            <button class="btn-watch">Continuar</button>
-                            <button class="btn-info-card">ℹ</button>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="video-card">
-                    <div class="badge">En Progreso</div>
-                    <img src="https://via.placeholder.com/220x310?text=The+Crown" alt="The Crown">
-                    <div class="video-overlay">
-                        <h4>The Crown</h4>
-                        <p>Temporada 5 - Episodio 3</p>
-                        <div class="rating">
-                            <span>⭐</span>
-                            <span>8.6/10</span>
-                        </div>
-                        <div class="video-overlay-actions">
-                            <button class="btn-watch">Continuar</button>
-                            <button class="btn-info-card">ℹ</button>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="video-card">
-                    <div class="badge">En Progreso</div>
-                    <img src="https://via.placeholder.com/220x310?text=Breaking+Bad" alt="Breaking Bad">
-                    <div class="video-overlay">
-                        <h4>Breaking Bad</h4>
-                        <p>Temporada 3 - Episodio 7</p>
-                        <div class="rating">
-                            <span>⭐</span>
-                            <span>9.5/10</span>
-                        </div>
-                        <div class="video-overlay-actions">
-                            <button class="btn-watch">Continuar</button>
-                            <button class="btn-info-card">ℹ</button>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="video-card">
-                    <div class="badge">En Progreso</div>
-                    <img src="https://via.placeholder.com/220x310?text=The+Office" alt="The Office">
-                    <div class="video-overlay">
-                        <h4>The Office</h4>
-                        <p>Temporada 6 - Episodio 12</p>
-                        <div class="rating">
-                            <span>⭐</span>
-                            <span>9.0/10</span>
-                        </div>
-                        <div class="video-overlay-actions">
-                            <button class="btn-watch">Continuar</button>
-                            <button class="btn-info-card">ℹ</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- TENDENCIAS AHORA -->
-        <section class="section">
-            <h2 class="section-title">Tendencias Ahora</h2>
-            <div class="video-grid">
-                <div class="video-card">
-                    <div class="badge">Nuevo</div>
-                    <img src="https://via.placeholder.com/220x310?text=Killers+of+the+Flower+Moon" alt="Killers of the Flower Moon">
-                    <div class="video-overlay">
-                        <h4>Killers of the Flower Moon</h4>
-                        <p>Drama, Crimen - 2023</p>
-                        <div class="rating">
-                            <span>⭐</span>
-                            <span>8.3/10</span>
-                        </div>
-                        <div class="video-overlay-actions">
-                            <button class="btn-watch">Reproducir</button>
-                            <button class="btn-info-card">➕</button>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="video-card">
-                    <div class="badge">TOP 10</div>
-                    <img src="https://via.placeholder.com/220x310?text=Barbie" alt="Barbie">
-                    <div class="video-overlay">
-                        <h4>Barbie</h4>
-                        <p>Comedia, Fantástico - 2023</p>
-                        <div class="rating">
-                            <span>⭐</span>
-                            <span>7.8/10</span>
-                        </div>
-                        <div class="video-overlay-actions">
-                            <button class="btn-watch">Reproducir</button>
-                            <button class="btn-info-card">➕</button>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="video-card">
-                    <img src="https://via.placeholder.com/220x310?text=The+Hunger+Games" alt="The Hunger Games">
-                    <div class="video-overlay">
-                        <h4>The Hunger Games: Ballad of Songbirds</h4>
-                        <p>Ciencia Ficción, Acción - 2023</p>
-                        <div class="rating">
-                            <span>⭐</span>
-                            <span>7.7/10</span>
-                        </div>
-                        <div class="video-overlay-actions">
-                            <button class="btn-watch">Reproducir</button>
-                            <button class="btn-info-card">➕</button>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="video-card">
-                    <div class="badge">TOP 10</div>
-                    <img src="https://via.placeholder.com/220x310?text=Asteroid+City" alt="Asteroid City">
-                    <div class="video-overlay">
-                        <h4>Asteroid City</h4>
-                        <p>Comedia, Drama - 2023</p>
-                        <div class="rating">
-                            <span>⭐</span>
-                            <span>7.5/10</span>
-                        </div>
-                        <div class="video-overlay-actions">
-                            <button class="btn-watch">Reproducir</button>
-                            <button class="btn-info-card">➕</button>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="video-card">
-                    <img src="https://via.placeholder.com/220x310?text=Dungeons+Dragons" alt="Dungeons & Dragons">
-                    <div class="video-overlay">
-                        <h4>Dungeons & Dragons: Honor Among Thieves</h4>
-                        <p>Acción, Aventura - 2023</p>
-                        <div class="rating">
-                            <span>⭐</span>
-                            <span>7.4/10</span>
-                        </div>
-                        <div class="video-overlay-actions">
-                            <button class="btn-watch">Reproducir</button>
-                            <button class="btn-info-card">➕</button>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="video-card">
-                    <img src="https://via.placeholder.com/220x310?text=The+Flash" alt="The Flash">
-                    <div class="video-overlay">
-                        <h4>The Flash</h4>
-                        <p>Acción, Superhéroes - 2023</p>
-                        <div class="rating">
-                            <span>⭐</span>
-                            <span>6.9/10</span>
-                        </div>
-                        <div class="video-overlay-actions">
-                            <button class="btn-watch">Reproducir</button>
-                            <button class="btn-info-card">➕</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- SERIES RECOMENDADAS -->
-        <section class="section" id="series">
-            <h2 class="section-title">Series Recomendadas</h2>
-            <div class="video-grid">
-                <div class="video-card">
-                    <img src="https://via.placeholder.com/220x310?text=Wednesday" alt="Wednesday">
-                    <div class="video-overlay">
-                        <h4>Wednesday</h4>
-                        <p>Drama, Misterio - 2022</p>
-                        <div class="rating">
-                            <span>⭐</span>
-                            <span>8.1/10</span>
-                        </div>
-                        <div class="video-overlay-actions">
-                            <button class="btn-watch">Reproducir</button>
-                            <button class="btn-info-card">➕</button>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="video-card">
-                    <img src="https://via.placeholder.com/220x310?text=The+Mandalorian" alt="The Mandalorian">
-                    <div class="video-overlay">
-                        <h4>The Mandalorian</h4>
-                        <p>Acción, Ciencia Ficción - 2019</p>
-                        <div class="rating">
-                            <span>⭐</span>
-                            <span>8.7/10</span>
-                        </div>
-                        <div class="video-overlay-actions">
-                            <button class="btn-watch">Reproducir</button>
-                            <button class="btn-info-card">➕</button>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="video-card">
-                    <img src="https://via.placeholder.com/220x310?text=Chernobyl" alt="Chernobyl">
-                    <div class="video-overlay">
-                        <h4>Chernobyl</h4>
-                        <p>Historia, Drama - 2019</p>
-                        <div class="rating">
-                            <span>⭐</span>
-                            <span>9.3/10</span>
-                        </div>
-                        <div class="video-overlay-actions">
-                            <button class="btn-watch">Reproducir</button>
-                            <button class="btn-info-card">➕</button>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="video-card">
-                    <img src="https://via.placeholder.com/220x310?text=Peaky+Blinders" alt="Peaky Blinders">
-                    <div class="video-overlay">
-                        <h4>Peaky Blinders</h4>
-                        <p>Drama, Crimen - 2013</p>
-                        <div class="rating">
-                            <span>⭐</span>
-                            <span>8.8/10</span>
-                        </div>
-                        <div class="video-overlay-actions">
-                            <button class="btn-watch">Reproducir</button>
-                            <button class="btn-info-card">➕</button>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="video-card">
-                    <img src="https://via.placeholder.com/220x310?text=Succession" alt="Succession">
-                    <div class="video-overlay">
-                        <h4>Succession</h4>
-                        <p>Drama - 2018</p>
-                        <div class="rating">
-                            <span>⭐</span>
-                            <span>9.0/10</span>
-                        </div>
-                        <div class="video-overlay-actions">
-                            <button class="btn-watch">Reproducir</button>
-                            <button class="btn-info-card">➕</button>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="video-card">
-                    <img src="https://via.placeholder.com/220x310?text=Mindhunter" alt="Mindhunter">
-                    <div class="video-overlay">
-                        <h4>Mindhunter</h4>
-                        <p>Crimen, Drama - 2017</p>
-                        <div class="rating">
-                            <span>⭐</span>
-                            <span>8.6/10</span>
-                        </div>
-                        <div class="video-overlay-actions">
-                            <button class="btn-watch">Reproducir</button>
-                            <button class="btn-info-card">➕</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- PELÍCULAS POPULARES -->
+        <!-- PELÍCULAS -->
         <section class="section" id="peliculas">
-            <h2 class="section-title">Películas Populares</h2>
-            <div class="video-grid">
-                <div class="video-card">
-                    <img src="https://via.placeholder.com/220x310?text=Inception" alt="Inception">
-                    <div class="video-overlay">
-                        <h4>Inception</h4>
-                        <p>Ciencia Ficción, Acción - 2010</p>
-                        <div class="rating">
-                            <span>⭐</span>
-                            <span>8.8/10</span>
+            <h2 class="section-title">🎬 Todas las Películas</h2>
+            
+            <% if (todosVideos != null && !todosVideos.isEmpty()) { %>
+                <div class="video-grid">
+                    <% for (Video video : todosVideos) { %>
+                        <div class="video-card">
+                            <div class="badge">NUEVO</div>
+                            
+                            <!-- Thumbnail -->
+                            <% if (video.getThumbnailUrl() != null && !video.getThumbnailUrl().isEmpty()) { %>
+                                <img src="<%= video.getThumbnailUrl() %>" alt="<%= video.getTitle() %>">
+                            <% } else { %>
+                                <div class="placeholder-thumbnail">🎬</div>
+                            <% } %>
+                            
+                            <!-- Overlay con información -->
+                            <div class="video-overlay">
+                                <h4><%= video.getTitle() %></h4>
+                                <p><%= video.getDescription() %></p>
+                                <p style="font-size: 11px; color: #999;">
+                                    ⏱️ <%= video.getDurationSeconds() / 60 %> min - 
+                                    📁 ID: <%= video.getId() %>
+                                </p>
+                                <div class="rating">
+                                    <span>⭐</span>
+                                    <span><%= 7 + (video.getId() % 3) %>.<%= video.getId() % 10 %>/10</span>
+                                </div>
+                                <div class="video-overlay-actions">
+                                    <button class="btn-watch" onclick="reproducir(<%= video.getId() %>, '<%= video.getTitle() %>')">▶ Reproducir</button>
+                                    <button class="btn-info-card" onclick="agregarLista(<%= video.getId() %>)">➕</button>
+                                </div>
+                            </div>
                         </div>
-                        <div class="video-overlay-actions">
-                            <button class="btn-watch">Reproducir</button>
-                            <button class="btn-info-card">➕</button>
-                        </div>
-                    </div>
+                    <% } %>
                 </div>
-
-                <div class="video-card">
-                    <img src="https://via.placeholder.com/220x310?text=Interstellar" alt="Interstellar">
-                    <div class="video-overlay">
-                        <h4>Interstellar</h4>
-                        <p>Ciencia Ficción, Drama - 2014</p>
-                        <div class="rating">
-                            <span>⭐</span>
-                            <span>8.6/10</span>
-                        </div>
-                        <div class="video-overlay-actions">
-                            <button class="btn-watch">Reproducir</button>
-                            <button class="btn-info-card">➕</button>
-                        </div>
-                    </div>
+            <% } else { %>
+                <div class="empty-message">
+                    <p>📭 No hay películas disponibles en este momento</p>
                 </div>
-
-                <div class="video-card">
-                    <img src="https://via.placeholder.com/220x310?text=The+Dark+Knight" alt="The Dark Knight">
-                    <div class="video-overlay">
-                        <h4>The Dark Knight</h4>
-                        <p>Acción, Crimen - 2008</p>
-                        <div class="rating">
-                            <span>⭐</span>
-                            <span>9.0/10</span>
-                        </div>
-                        <div class="video-overlay-actions">
-                            <button class="btn-watch">Reproducir</button>
-                            <button class="btn-info-card">➕</button>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="video-card">
-                    <img src="https://via.placeholder.com/220x310?text=Pulp+Fiction" alt="Pulp Fiction">
-                    <div class="video-overlay">
-                        <h4>Pulp Fiction</h4>
-                        <p>Crimen, Drama - 1994</p>
-                        <div class="rating">
-                            <span>⭐</span>
-                            <span>8.9/10</span>
-                        </div>
-                        <div class="video-overlay-actions">
-                            <button class="btn-watch">Reproducir</button>
-                            <button class="btn-info-card">➕</button>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="video-card">
-                    <img src="https://via.placeholder.com/220x310?text=Forrest+Gump" alt="Forrest Gump">
-                    <div class="video-overlay">
-                        <h4>Forrest Gump</h4>
-                        <p>Drama, Romance - 1994</p>
-                        <div class="rating">
-                            <span>⭐</span>
-                            <span>8.8/10</span>
-                        </div>
-                        <div class="video-overlay-actions">
-                            <button class="btn-watch">Reproducir</button>
-                            <button class="btn-info-card">➕</button>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="video-card">
-                    <img src="https://via.placeholder.com/220x310?text=The+Matrix" alt="The Matrix">
-                    <div class="video-overlay">
-                        <h4>The Matrix</h4>
-                        <p>Ciencia Ficción, Acción - 1999</p>
-                        <div class="rating">
-                            <span>⭐</span>
-                            <span>8.7/10</span>
-                        </div>
-                        <div class="video-overlay-actions">
-                            <button class="btn-watch">Reproducir</button>
-                            <button class="btn-info-card">➕</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <% } %>
         </section>
     </main>
 
@@ -1035,7 +721,7 @@
                 </div>
             </div>
             <div class="footer-bottom">
-                <p>&copy; 2024 Netflix DASH. Todos los derechos reservados.</p>
+                <p>&copy; 2024 Zabflix DASH. Todos los derechos reservados.</p>
             </div>
         </div>
     </footer>
@@ -1056,28 +742,29 @@
 
         function logout() {
             if (confirm('¿Estás seguro de que deseas cerrar sesión?')) {
-                window.location.href = 'logout';
+                window.location.href = 'LogoutServlet';
             }
         }
 
+        function reproducir(videoId, titulo) {
+            // Aquí puedes redirigir al player
+            window.location.href = 'player.jsp?VideoId=' + videoId;
+        }
+
+        function agregarLista(videoId) {
+            alert('Video agregado a Mi Lista');
+            //Función no desarollada
+        }
+
         // Búsqueda de contenido
-        const searchInput = document.querySelector('.search-input');
+        const searchInput = document.getElementById('searchInput');
         searchInput.addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
                 const query = this.value;
                 console.log('Buscando:', query);
-                // Aquí puedes implementar la búsqueda real
+                // Implementar busqueda , ...
+                // fetch('BuscadorServlet?q=' + query).then(...)
             }
-        });
-
-        // Reproducción de videos (placeholder)
-        const playButtons = document.querySelectorAll('.btn-play, .btn-watch');
-        playButtons.forEach(button => {
-            button.addEventListener('click', function(e) {
-                e.stopPropagation();
-                alert('Iniciando reproducción del video...');
-                // Aquí redirigirías al player.jsp con el ID del video
-            });
         });
     </script>
 </body>

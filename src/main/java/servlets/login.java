@@ -31,11 +31,12 @@ public class login extends HttpServlet {
         response.setContentType("text/html;charset=UTF-8");
 
         userDAO operacion = new userDAO();
-        boolean esValido = operacion.validarUsuario(email, password);
         
-        if (esValido) {
+        String usuario = operacion.validarUsuario(email, password);
+        
+        if (usuario != null) {
             HttpSession session = request.getSession();
-            session.setAttribute("email", email);
+            session.setAttribute("usuario", usuario);
             response.sendRedirect("menu.jsp");
         } else {
             response.sendRedirect("login.jsp?error=Credenciales inválidas");

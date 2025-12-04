@@ -28,7 +28,7 @@ public class videoStream extends HttpServlet {
 
         // Construir ruta: /video/stream/video001/manifest.mpd
         String filePath = MEDIA_PATH + pathInfo.substring(1);
-        System.out.println("📍 Sirviendo: " + filePath);
+        System.out.println("Sirviendo: " + filePath);
         
         File requestedFile = new File(filePath);
 
