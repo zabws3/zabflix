@@ -1,8 +1,9 @@
 package servlets;
 
 import clases.Video;
-import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import daos.videoDAO;
+import daos.daoCategoria;
 import java.io.IOException;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -23,14 +24,35 @@ public class videoAPI extends HttpServlet {
         String videoId = request.getParameter("id");
         System.out.println("API request para video ID: " + videoId);
         
-        videoDAO dao = new videoDAO();
-        Video video = dao.obtenerVideoPorId(Integer.parseInt(videoId));
+        videoDAO vDAO = new videoDAO();
+        daoCategoria cDAO = new daoCategoria();
+        
+        Video video = vDAO.obtenerVideoPorId(Integer.parseInt(videoId));
 
-        // Convertir a JSON y enviar
-        Gson gson = new Gson();
-        String jsonResponse = gson.toJson(video);
-
-        System.out.println("✅ Enviando JSON: " + jsonResponse);
-        response.getWriter().write(jsonResponse);
+        if (video != null) {
+            // Obtener el nombre de la categoría usando tu DAO
+            String categoryName = cDAO.categoriaPorId(video.getCategoryId());
+            if (categoryName == null) {
+                categoryName = "Sin categoría";
+            }
+            
+            // Crear un objeto JSON personalizado (para nombre de categoria)
+            JsonObject jsonObj = new JsonObject();
+            jsonObj.addProperty("id", video.getId());
+            jsonObj.addProperty("title", video.getTitle());
+            jsonObj.addProperty("description", video.getDescription());
+            jsonObj.addProperty("durationSeconds", video.getDurationSeconds());
+            jsonObj.addProperty("thumbnailUrl", video.getThumbnailUrl());
+            jsonObj.addProperty("mpdPath", video.getMpdPath());
+            jsonObj.addProperty("categoryId", video.getCategoryId());
+            jsonObj.addProperty("categoryName", categoryName);
+            jsonObj.addProperty("uploadDate", video.getUploadDate().toString());
+            
+            System.out.println("✅ Enviando JSON: " + jsonObj.toString());
+            response.getWriter().write(jsonObj.toString());
+        } else {
+            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            response.getWriter().write("{\"error\":\"Video no encontrado\"}");
+        }
     }
 }
