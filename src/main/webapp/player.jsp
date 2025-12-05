@@ -5,7 +5,6 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Zabflix - Reproductor</title>
-        <!-- Librería dash.js para reproducción MPEG-DASH -->
         <script src="https://cdn.dashjs.org/latest/dash.all.min.js"></script>
         <style>
             * {
@@ -15,470 +14,447 @@
             }
 
             body {
-                font-family: Arial, sans-serif;
+                font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
                 background-color: #141414;
                 color: #ffffff;
             }
 
             header {
                 background-color: #000;
-                padding: 15px 20px;
-                border-bottom: 2px solid #e50914;
+                padding: 15px 4%; /* Padding responsive */
+                border-bottom: 1px solid #333; /* Borde más sutil */
+                background: linear-gradient(to bottom, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0) 100%);
+                position: fixed;
+                width: 100%;
+                z-index: 100;
+                top: 0;
             }
 
             header h1 {
                 margin: 0;
-                font-size: 24px;
+                font-size: 28px;
+                color: #e50914;
+                text-transform: uppercase;
             }
 
             .container {
                 max-width: 1200px;
-                margin: 0 auto;
+                margin: 80px auto 0; /* Margen superior para el header fijo */
                 padding: 20px;
             }
 
             .player-section {
                 background-color: #000;
-                border-radius: 8px;
-                margin-bottom: 30px;
-                overflow: hidden;
+                margin-bottom: 20px;
+                position: relative;
+                aspect-ratio: 16/9; /* Mantiene proporción de video */
+                display: flex;
+                align-items: center;
+                justify-content: center;
             }
 
             video {
                 width: 100%;
-                height: auto;
+                height: 100%;
                 background-color: #000;
             }
 
+            /* --- ESTILOS DE INFORMACIÓN --- */
             .info-section {
-                background-color: #222;
-                padding: 20px;
-                border-radius: 8px;
+                padding: 10px 0;
                 margin-bottom: 20px;
             }
 
             .info-section h2 {
                 margin-top: 0;
-                color: #e50914;
-                font-size: 28px;
-            }
-
-            .info-section p {
-                color: #b3b3b3;
-                line-height: 1.6;
-                margin: 10px 0;
+                color: #fff;
+                font-size: 32px;
+                margin-bottom: 10px;
             }
 
             .video-meta {
                 display: flex;
-                gap: 20px;
-                margin: 15px 0;
-                flex-wrap: wrap;
-            }
-
-            .meta-item {
-                color: #b3b3b3;
-                font-size: 14px;
-            }
-
-            .meta-item strong {
-                color: #ffffff;
-            }
-
-            .controls {
-                background-color: #222;
-                padding: 15px;
-                border-radius: 8px;
-                margin-bottom: 20px;
-                display: flex;
-                gap: 10px;
-                flex-wrap: wrap;
+                gap: 15px;
+                margin: 10px 0;
                 align-items: center;
+                color: #a3a3a3;
+                font-size: 16px;
+            }
+
+            .meta-highlight {
+                color: #46d369; /* Verde "Match" de Netflix */
+                font-weight: bold;
+            }
+
+            .info-section p {
+                color: #fff;
+                line-height: 1.5;
+                font-size: 16px;
+                max-width: 800px;
+                margin-top: 15px;
+            }
+
+            /* --- CONTROLES Y SELECTOR BONITO --- */
+            .controls {
+                margin: 20px 0;
+                display: flex;
+                gap: 20px;
+                align-items: center;
+                flex-wrap: wrap;
             }
 
             button {
-                background-color: #e50914;
+                background-color: rgba(109, 109, 110, 0.7);
                 color: white;
                 border: none;
-                padding: 10px 20px;
+                padding: 8px 20px;
                 border-radius: 4px;
                 cursor: pointer;
-                font-size: 14px;
+                font-size: 16px;
                 font-weight: bold;
-                transition: background-color 0.3s;
+                transition: background-color 0.2s;
+                display: flex;
+                align-items: center;
+                gap: 8px;
             }
 
             button:hover {
-                background-color: #ff6b6b;
+                background-color: rgba(109, 109, 110, 0.4);
+            }
+
+            /* Wrapper para el selector */
+            .quality-wrapper {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+
+            .quality-wrapper label {
+                color: #a3a3a3;
+                font-size: 14px;
+                font-weight: bold;
+                text-transform: uppercase;
+            }
+
+            /* ESTILO DEL SELECTOR (Dropdown) */
+            select#qualitySelect {
+                appearance: none; /* Quita el estilo por defecto del navegador */
+                -webkit-appearance: none;
+                -moz-appearance: none;
+
+                background-color: #000;
+                color: #fff;
+                font-size: 14px;
+                font-weight: bold;
+                padding: 8px 35px 8px 15px; /* Espacio a la derecha para la flecha */
+                border: 1px solid #4d4d4d;
+                border-radius: 4px;
+                cursor: pointer;
+                outline: none;
+
+                /* Flecha personalizada (SVG) */
+                background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3e%3cpath d='M7 10l5 5 5-5z'/%3e%3c/svg%3e");
+                background-repeat: no-repeat;
+                background-position: right 8px center;
+                background-size: 20px;
+                transition: border-color 0.3s;
+            }
+
+            select#qualitySelect:hover {
+                border-color: #fff;
+            }
+
+            select#qualitySelect:focus {
+                border-color: #e50914; /* Rojo al estar activo */
+            }
+
+            /* --- ESTADÍSTICAS TÉCNICAS (Ocultas visualmente o sutiles) --- */
+            .stats {
+                background-color: #000;
+                border: 1px solid #333;
+                padding: 15px;
+                border-radius: 4px;
+                display: flex;
+                gap: 30px;
+                margin-top: 40px;
+                opacity: 0.7; /* Un poco transparente para no molestar */
+            }
+
+            .stat {
+                display: flex;
+                flex-direction: column;
+            }
+
+            .stat-label {
+                font-size: 10px;
+                color: #777;
+                text-transform: uppercase;
+                margin-bottom: 2px;
+            }
+
+            .stat-value {
+                font-size: 14px;
+                font-weight: bold;
+                color: #e50914;
+                font-family: monospace;
             }
 
             .loading {
                 text-align: center;
-                padding: 40px;
                 color: #b3b3b3;
+                position: absolute;
             }
 
             .error {
-                background-color: #8b0000;
-                color: #ffcccc;
+                background-color: #e50914;
+                color: white;
                 padding: 15px;
                 border-radius: 4px;
                 margin-bottom: 20px;
                 display: none;
-            }
-
-            .stats {
-                background-color: #222;
-                padding: 15px;
-                border-radius: 8px;
-                display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-                gap: 15px;
-            }
-
-            .stat {
-                background-color: #333;
-                padding: 10px;
-                border-radius: 4px;
-            }
-
-            .stat-label {
-                font-size: 12px;
-                color: #b3b3b3;
-                text-transform: uppercase;
-            }
-
-            .stat-value {
-                font-size: 18px;
                 font-weight: bold;
-                color: #e50914;
-                margin-top: 5px;
+                text-align: center;
             }
         </style>
     </head>
     <body>
         <%
-            //Controlar sesion FALTA POR IMPLEMENTAR!!
             // Obtener el ID del video
             String videoId = request.getParameter("VideoId");
             if (videoId == null || videoId.isEmpty()) {
-                videoId = "1"; // Por defecto, video 1
+                videoId = "1"; // Por defecto
             }
         %>
 
-        <!-- HEADER -->
         <header>
             <h1>Zabflix</h1>
         </header>
 
         <div class="container">
-            <!-- MENSAJES DE ERROR -->
             <div class="error" id="error"></div>
 
-            <!-- REPRODUCTOR DE VIDEO -->
             <div class="player-section">
                 <div id="loading" class="loading">
-                    <p>⏳ Cargando video...</p>
+                    <p>Cargando...</p>
                 </div>
                 <video id="videoPlayer" controls style="display: none;"></video>
             </div>
 
-            <!-- INFORMACIÓN DEL VIDEO -->
             <div class="info-section" id="videoInfo" style="display: none;">
-                <h2 id="videoTitle">Título del video</h2>
+                <h2 id="videoTitle">Título...</h2>
 
                 <div class="video-meta">
-                    <div class="meta-item">
-                        <strong>Duración:</strong> <span id="videoDuration">0:00</span>
-                    </div>
-                    <div class="meta-item">
-                        <strong>Categoría:</strong> <span id="videoCategory">-</span>
-                    </div>
-                    <div class="meta-item">
-                        <strong>Subido:</strong> <span id="videoDate">-</span>
-                    </div>
+                    <span class="meta-highlight">Nuevo</span>
+                    <span id="videoDate">2023</span>
+                    <span style="border: 1px solid #777; padding: 0 4px; font-size: 12px;">HD</span>
+                    <span id="videoDuration">0h 00m</span>
                 </div>
 
-                <p id="videoDescription">Descripción del video</p>
+                <div class="video-meta" style="font-size: 14px;">
+                    <strong>Categoría:</strong> <span id="videoCategory">-</span>
+                </div>
+
+                <p id="videoDescription">Descripción...</p>
             </div>
 
-            <!-- CONTROLES -->
             <div class="controls">
-                <button onclick="goBack()">← Volver al Catálogo</button>
-                <!-- Selector de calidad -->
-                <label style="color:#fff; margin-left:10px;">
-                    Calidad:
+                <button onclick="goBack()">
+                    <span>←</span> Volver
+                </button>
+
+                <div class="quality-wrapper">
+                    <label for="qualitySelect">Calidad</label>
                     <select id="qualitySelect" onchange="onQualityChange(this.value)">
                         <option value="auto">Auto</option>
-                        <option value="0">360p</option>
-                        <option value="1">720p</option>
                     </select>
-                </label>
+                </div>
+            </div>
+
+            <div class="stats">
+                <div class="stat">
+                    <div class="stat-label">Calidad Actual</div>
+                    <div class="stat-value" id="currentQuality">Auto</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-label">Buffer</div>
+                    <div class="stat-value" id="bufferLevel">0s</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-label">Estado</div>
+                    <div class="stat-value" id="playerStatus">Init</div>
+                </div>
             </div>
         </div>
 
-        <!-- ESTADÍSTICAS DEL REPRODUCTOR -->
-        <div class="stats">
-            <div class="stat">
-                <div class="stat-label">Calidad Actual</div>
-                <div class="stat-value" id="currentQuality">-</div>
-            </div>
-            <div class="stat">
-                <div class="stat-label">Bitrate</div>
-                <div class="stat-value" id="currentBitrate">-</div>
-            </div>
-            <div class="stat">
-                <div class="stat-label">Buffer</div>
-                <div class="stat-value" id="bufferLevel">-</div>
-            </div>
-            <div class="stat">
-                <div class="stat-label">Estado</div>
-                <div class="stat-value" id="playerStatus">Esperando...</div>
-            </div>
-        </div>
-    </div>
+        <script>
+            const videoId = '<%= videoId %>';
+            let player;
+            let videoData = null;
 
-    <script>
-        // Variables globales
-        const videoId = '<%= videoId %>';
-        let player;
-        let videoData = null;
-        let videoQualities = [];
-        // ========== INICIALIZACIÓN ==========
-        document.addEventListener('DOMContentLoaded', function () {
-            console.log('Cargando video ID:', videoId);
-
-            // 1. Inicializar reproductor DASH
-            initializePlayer();
-
-            // 2. Cargar datos del video desde la API
-            loadVideoData();
-        });
-
-        // ========== INICIALIZAR DASH.JS ==========
-
-        function initializePlayer() {
-            const video = document.getElementById('videoPlayer');
-
-            // Crear reproductor dash.js
-            player = dashjs.MediaPlayer().create();
-            player.initialize(video, null, false);
-
-            // Configuración mínima (sin parámetros no soportados)
-            player.updateSettings({
-                streaming: {
-                    abr: {
-                        autoSwitchBitrate: {
-                            video: false
-                        }
-                    }
-                }
+            document.addEventListener('DOMContentLoaded', function () {
+                initializePlayer();
+                loadVideoData();
             });
 
-            // Escuchadores de eventos
-            player.on(dashjs.MediaPlayer.events.STREAM_INITIALIZED, onStreamReady);
-            player.on(dashjs.MediaPlayer.events.METRIC_CHANGED, onMetricsUpdated);
-            player.on(dashjs.MediaPlayer.events.ERROR, onPlayerError);
+            function initializePlayer() {
+                const video = document.getElementById('videoPlayer');
+                player = dashjs.MediaPlayer().create();
+                player.initialize(video, null, false);
 
-            console.log('Reproductor DASH.js inicializado');
-        }
-
-
-        // ========== CARGAR DATOS DEL VIDEO ==========
-        function loadVideoData() {
-            // Llamar a la API para obtener información del video
-            fetch('api/video?id=' + videoId)
-                    .then(response => {
-                        if (!response.ok)
-                            throw new Error('Error en la API');
-                        return response.json();
-                    })
-                    .then(data => {
-                        console.log('Datos del video recibidos:', data);
-                        videoData = data;
-
-                        // Mostrar información
-                        displayVideoInfo(data);
-
-                        // Cargar el stream MPEG-DASH
-                        loadVideoStream(data);
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        showError('Error cargando el video: ' + error.message);
-                        document.getElementById('loading').style.display = 'block';
-                    });
-        }
-
-        // ========== MOSTRAR INFORMACIÓN DEL VIDEO ==========
-        function displayVideoInfo(data) {
-            console.log('Mostrando información del video');
-
-            document.getElementById('loading').style.display = 'none';
-            document.getElementById('videoInfo').style.display = 'block';
-
-            // Rellenar datos
-            document.getElementById('videoTitle').textContent = data.title || 'Sin título';
-            document.getElementById('videoDescription').textContent = data.description || 'Sin descripción';
-            document.getElementById('videoCategory').textContent = 'Categoría ' + (data.categoryId || '-');
-            document.getElementById('videoDuration').textContent = formatSeconds(data.durationSeconds || 0);
-
-            // Fecha
-            if (data.uploadDate) {
-                const fecha = new Date(data.uploadDate);
-                document.getElementById('videoDate').textContent = fecha.toLocaleDateString('es-ES');
-            }
-        }
-
-        // ========== CARGAR STREAM MPEG-DASH ==========
-        function loadVideoStream(data) {
-            const mpdUrl = 'video/stream/' + data.mpdPath;
-
-            console.log('Cargando MPD desde:', mpdUrl);
-            console.log('URL completa:', window.location.origin + '/' + mpdUrl);
-
-            try {
-                player.attachSource(mpdUrl);
-                document.getElementById('playerStatus').textContent = 'Cargado (pulsa ▶)';
-            } catch (error) {
-                console.error('Error cargando stream:', error);
-                showError('Error al cargar el stream: ' + error.message);
-            }
-        }
-
-
-        // ========== EVENT: Stream listo ==========
-        function onStreamReady(e) {
-            console.log('✅ Stream listo para reproducir');
-            document.getElementById('playerStatus').textContent = 'Listo';
-            document.getElementById('videoPlayer').style.display = 'block';
-
-            try {
-                // Lista de calidades disponibles para vídeo
-                videoQualities = player.getBitrateInfoListFor('video') || [];
-                console.log('Calidades disponibles:', videoQualities);
-
-                // Opcional: ajustar los textos del `<select>` según height real
-                const select = document.getElementById('qualitySelect');
-                if (videoQualities.length >= 2) {
-                    select.options[1].text = videoQualities[0].height + 'p'; // índice 0
-                    select.options[2].text = videoQualities[1].height + 'p'; // índice 1
-                }
-            } catch (err) {
-                console.warn('No se pudo obtener la lista de calidades:', err);
-            }
-        }
-
-
-        // ========== EVENT: Métricas actualizadas ==========
-        function onMetricsUpdated(e) {
-            if (e.mediaType === 'video') {
-                try {
-                    // Buffer
-                    const bufferLevel = player.getBufferLength('video');
-                    document.getElementById('bufferLevel').textContent = Math.round(bufferLevel) + 's';
-
-                    // Calidad y bitrate actuales
-                    const qualityIndex = player.getQualityFor('video');   // índice actual
-                    const bitrates = player.getBitrateInfoListFor('video');
-
-                    if (bitrates && bitrates[qualityIndex]) {
-                        const q = bitrates[qualityIndex];
-                        // Ej: 360p / 720p
-                        document.getElementById('currentQuality').textContent =
-                                (q.height ? q.height + 'p' : qualityIndex);
-
-                        // Bitrate en kbps
-                        document.getElementById('currentBitrate').textContent =
-                                Math.round(q.bitrate / 1000) + ' kbps';
-                    }
-                } catch (err) {
-                    console.warn('No se pudieron leer métricas de vídeo:', err);
-                }
-            }
-        }
-
-
-
-        // ========== EVENT: Error en reproductor ==========
-        function onPlayerError(e) {
-            console.error('Error del reproductor:', e);
-            showError('Error en la reproducción: ' + (e.error ? e.error.message : 'Desconocido'));
-        }
-
-        // ========== UTILIDADES ==========
-        function formatSeconds(seconds) {
-            const hours = Math.floor(seconds / 3600);
-            const minutes = Math.floor((seconds % 3600) / 60);
-            const secs = Math.floor(seconds % 60);
-
-            if (hours > 0) {
-                return hours + ':' + String(minutes).padStart(2, '0') + ':' + String(secs).padStart(2, '0');
-            } else {
-                return minutes + ':' + String(secs).padStart(2, '0');
-            }
-        }
-
-        function showError(message) {
-            const errorDiv = document.getElementById('error');
-            errorDiv.textContent = message;
-            errorDiv.style.display = 'block';
-            console.error('⚠️', message);
-        }
-
-        function goBack() {
-            window.location.href = 'menu.jsp';
-        }
-
-        function onQualityChange(value) {
-            if (!player)
-                return;
-
-            if (value === 'auto') {
-                // Volver al modo automático
                 player.updateSettings({
                     streaming: {
                         abr: {
-                            autoSwitchBitrate: {
-                                video: true
-                            }
+                            autoSwitchBitrate: {video: true}
                         }
                     }
                 });
-                console.log('Calidad: automática');
-                return;
+
+                player.on(dashjs.MediaPlayer.events.PLAYBACK_METADATA_LOADED, onStreamReady);
+                player.on(dashjs.MediaPlayer.events.METRIC_CHANGED, onMetricsUpdated);
+                player.on(dashjs.MediaPlayer.events.ERROR, onPlayerError);
             }
 
-            const index = parseInt(value, 10);
+            function loadVideoData()
+                    fetch('api/video?id=' + videoId)
+                    .then(r => {
+                    if (!r.ok)
+                            throw new Error('Error API');
+                            return r.json();
+                    })
+                    .then(data => {
+                    videoData = data;
+                            displayVideoInfo(data);
+                            loadVideoStream(data);
+                    })
+                    .catch(err => {
+                    console.error(err);
+                            showError(err.message);
+                    }
+                    );
+            }
 
-            // Desactivar automático y fijar índice (0 = calidad más baja, 1 = más alta, etc.)
-            player.updateSettings({
-                streaming: {
-                    abr: {
-                        autoSwitchBitrate: {
-                            video: false
-                        }
+            function displayVideoInfo(data) {
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('videoInfo').style.display = 'block';
+                document.getElementById('videoTitle').textContent = data.title || 'Sin título';
+                document.getElementById('videoDescription').textContent = data.description || '';
+                document.getElementById('videoCategory').textContent = data.categoryId || '-';
+                document.getElementById('videoDuration').textContent = formatSeconds(data.durationSeconds || 0);
+
+                if (data.uploadDate) {
+                    const fecha = new Date(data.uploadDate);
+                    document.getElementById('videoDate').textContent = fecha.getFullYear();
+                }
+            }
+
+            function loadVideoStream(data) {
+                const mpdUrl = 'video/stream/' + data.mpdPath;
+                try {
+                    player.attachSource(mpdUrl);
+                } catch (error) {
+                    showError('Error stream: ' + error.message);
+                }
+            }
+
+
+            // ========== CONFIGURACIÓN DE CALIDADES ==========
+            function onStreamReady(e) {
+                console.log('✅ Metadatos cargados. Configurando selector...');
+
+                document.getElementById('playerStatus').textContent = 'Listo';
+                document.getElementById('videoPlayer').style.display = 'block';
+
+                // 1. Usamos el método oficial: getRepresentationsByType
+                // Documentación: Devuelve el array de representaciones (calidades) disponibles
+                const qualities = player.getRepresentationsByType('video');
+
+                console.log("Calidades encontradas:", qualities);
+
+                const select = document.getElementById('qualitySelect');
+
+                // 2. Limpiar y reiniciar selector (dejando el Auto)
+                select.innerHTML = '<option value="auto">Auto</option>';
+
+                if (qualities && qualities.length > 0) {
+                    qualities.forEach((rep, index) => {
+                        // rep contiene: id, width, height, bandwidth, etc.
+                        const option = document.createElement('option');
+
+                        // Usamos el índice para identificar la opción en el select
+                        option.value = index;
+
+                        // Texto visible: "720p"
+                        option.text = rep.height + 'p';
+
+                        select.appendChild(option);
+                    });
+                } else {
+                    console.warn("⚠️ No se encontraron calidades explícitas (posiblemente un stream de una sola calidad)");
+                    // Si no hay lista, dejamos solo "Auto" o agregamos una opción "Default"
+                    const option = document.createElement('option');
+                    option.value = "0";
+                    option.text = "Default";
+                    select.appendChild(option);
+                }
+            }
+
+            function onQualityChange(value) {
+                if (!player)
+                    return;
+
+                if (value === 'auto') {
+                    player.updateSettings({
+                        streaming: {abr: {autoSwitchBitrate: {video: true}}}
+                    });
+                    document.getElementById('currentQuality').textContent = 'Auto';
+                } else {
+                    const index = parseInt(value, 10);
+
+                    // Desactivar auto
+                    player.updateSettings({
+                        streaming: {abr: {autoSwitchBitrate: {video: false}}}
+                    });
+
+                    // Cambiar calidad usando ID (Método seguro v5)
+                    const qualities = player.getRepresentationsByType('video');
+                    if (qualities && qualities[index]) {
+                        player.setRepresentationForTypeById('video', qualities[index].id);
+                        document.getElementById('currentQuality').textContent = qualities[index].height + 'p';
                     }
                 }
-            });
-
-            try {
-                player.setQualityFor('video', index);
-                // Forzar actualización visual inmediata
-                const bitrates = player.getBitrateInfoListFor('video');
-                if (bitrates && bitrates[index]) {
-                    const q = bitrates[index];
-                    document.getElementById('currentQuality').textContent =
-                            (q.height ? q.height + 'p' : index);
-                    document.getElementById('currentBitrate').textContent =
-                            Math.round(q.bitrate / 1000) + ' kbps';
-                }
-                console.log('Cambiando a calidad índice', index);
-            } catch (err) {
-                console.error('Error cambiando calidad:', err);
             }
-        }
 
-    </script>
-</body>
+            function onMetricsUpdated(e) {
+                if (e.mediaType !== 'video' || !player)
+                    return;
+                try {
+                    const bufferLevel = player.getBufferLength('video');
+                    document.getElementById('bufferLevel').textContent = Math.round(bufferLevel) + 's';
+                } catch (err) {
+                }
+            }
+
+            function onPlayerError(e) {
+                showError('Error: ' + (e.error ? e.error.message : 'Desconocido'));
+            }
+
+            function formatSeconds(seconds) {
+                const h = Math.floor(seconds / 3600);
+                const m = Math.floor((seconds % 3600) / 60);
+                if (h > 0)
+                    return h + 'h ' + m + 'm';
+                return m + 'm';
+            }
+
+            function showError(msg) {
+                const errDiv = document.getElementById('error');
+                errDiv.textContent = msg;
+                errDiv.style.display = 'block';
+            }
+
+            function goBack() {
+                window.location.href = 'menu.jsp';
+            }
+        </script>
+    </body>
 </html>
