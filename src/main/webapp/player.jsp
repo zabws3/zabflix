@@ -184,6 +184,12 @@
     </head>
     <body>
         <%
+                  
+            String usuario = (String) session.getAttribute("usuario");
+            if (usuario == null) {
+            response.sendRedirect("login");
+            return;
+        }
             // Obtener el ID del video
             String videoId = request.getParameter("VideoId");
             if (videoId == null || videoId.isEmpty()) {
