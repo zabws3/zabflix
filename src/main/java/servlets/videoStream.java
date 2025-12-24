@@ -68,7 +68,7 @@ public class videoStream extends HttpServlet {
         }
 
         // Servir archivo
-        try (FileInputStream fis = new FileInputStream(requestedFile);
+            try (FileInputStream fis = new FileInputStream(requestedFile);
              OutputStream out = response.getOutputStream()) {
             
             byte[] buffer = new byte[8192];

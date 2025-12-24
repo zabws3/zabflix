@@ -290,7 +290,7 @@
 
     <div class="register-container">
         <div class="logo">
-            <h1>NETFLIX DASH</h1>
+            <h1>ZABFLIX</h1>
             <p>Crea tu cuenta</p>
         </div>
 
