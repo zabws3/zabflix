@@ -627,7 +627,7 @@ Este proyecto está bajo licencia **MIT**. Consulta el archivo `LICENSE` para de
 
 ## 👨‍💻 Autor
 
-**Wenceslao Sáez** - [@zabws3](https://github.com/zabws3)
+[@zabws3](https://github.com/zabws3)
 
 Proyecto desarrollado como exploración de arquitecturas de streaming multimedia en Java EE.
 
